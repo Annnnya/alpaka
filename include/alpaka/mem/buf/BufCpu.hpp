@@ -312,3 +312,4 @@ namespace alpaka
 
 #include "alpaka/mem/buf/cpu/Copy.hpp"
 #include "alpaka/mem/buf/cpu/Set.hpp"
+#include "alpaka/mem/buf/cpu/Fill.hpp"
