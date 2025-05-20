@@ -268,5 +268,6 @@ namespace alpaka::trait
 
 #    include "alpaka/mem/buf/sycl/Copy.hpp"
 #    include "alpaka/mem/buf/sycl/Set.hpp"
+#    include "alpaka/mem/buf/sycl/Fill.hpp"
 
 #endif
