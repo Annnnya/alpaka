@@ -66,9 +66,6 @@ namespace alpaka
 
             ALPAKA_FN_HOST auto operator()() const -> void
             {
-                // Vec<DimMin1, ExtentSize> const extentWithoutInnermost = subVecBegin<DimMin1>(this->m_extent);
-                // Vec<DimMin1, DstSize> const pitchBytesWithoutOutmost = subVecBegin<DimMin1>(this->m_dstPitchBytes);
-
                 if(static_cast<std::size_t>(this->m_extent.prod()) != 0u)
                 {
                     meta::ndLoopIncIdx(
