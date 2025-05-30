@@ -64,9 +64,6 @@ namespace alpaka
             using Elem = typename Base::Elem;
             using ExtentSize = typename Base::ExtentSize;
 
-            // using DstSize = typename Base::DstSize;
-            // using DimMin1 = DimInt<TDim::value - 1u>;
-
             ALPAKA_FN_HOST auto operator()() const -> void
             {
                 // Vec<DimMin1, ExtentSize> const extentWithoutInnermost = subVecBegin<DimMin1>(this->m_extent);
