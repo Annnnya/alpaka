@@ -28,7 +28,6 @@ TEMPLATE_LIST_TEST_CASE("memBufFillTest", "[memBuf]", alpaka::test::TestAccs)
     auto const platformHost = alpaka::PlatformCpu{};
     auto const devHost = alpaka::getDevByIdx(platformHost, 0);
 
-
     auto const platformAcc = alpaka::Platform<Acc>{};
     auto const dev = alpaka::getDevByIdx(platformAcc, 0);
 
