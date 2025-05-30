@@ -108,16 +108,13 @@ namespace alpaka
                         [&](Vec<DimMin1, ExtentSize> const& idx)
                         {
                             auto offsetBytes = (castVec<DstSize>(idx) * dstPitchBytesWithoutInnermost).sum();
-                            Elem* ptr = reinterpret_cast<Elem*>(this->m_dstMemNative + offsetBytes);
+                            Elem* ptr = reinterpret_cast<Elem*>(reinterpret_cast<std::uint8_t*>(this->m_dstMemNative) + offsetBytes);
 
                             std::cerr << "Value before fill at offset " << offsetBytes << ": " << ptr[0] << std::endl;
 
                             events.push_back(
                                 queue.fill<TValue>(ptr, this->m_value, this->m_extentWidth, requirements));
 
-                            // You won't see the new value until after the fill completes
-                            // so printing here shows only the pre-fill state.
-                            queue.wait_and_throw();
                             std::cerr << "Value after fill at offset " << offsetBytes << ": " << ptr[0] << std::endl;
                         });
 
