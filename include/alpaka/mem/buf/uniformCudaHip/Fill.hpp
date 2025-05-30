@@ -36,9 +36,6 @@ namespace alpaka
                 TPitchBytes pitchBytes) const
             {
                 using namespace alpaka;
-                // using Dim = alpaka::Dim<TExtent>;
-                // using Idx = alpaka::Idx<TElem>;
-
                 for(auto const& idx : uniformElementsND(acc, extent))
                 {
                     std::uintptr_t offsetBytes
