@@ -95,7 +95,7 @@ namespace alpaka
             template<typename TViewFwd>
             TaskFillCpu(TViewFwd&& view, TValue const& value, [[maybe_unused]] TExtent const& extent)
                 : m_value(value)
-                , m_dstMemNative(reinterpret_cast<std::uint8_t*>(getPtrNative(view)))
+                , m_dstMemNative(getPtrNative(view))
             {
                 ALPAKA_ASSERT(getExtents(extent).prod() == 1u);
                 ALPAKA_ASSERT(getExtents(view).prod() == 1u);
@@ -104,11 +104,11 @@ namespace alpaka
 
             ALPAKA_FN_HOST auto operator()() const noexcept -> void
             {
-                *reinterpret_cast<Elem*>(m_dstMemNative) = m_value;
+                m_dstMemNative = m_value;
             }
 
             TValue const m_value;
-            std::uint8_t* const m_dstMemNative;
+            Elem* const m_dstMemNative;
         };
     } // namespace detail
 
