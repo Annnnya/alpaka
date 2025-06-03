@@ -94,31 +94,22 @@ namespace alpaka
                 std::vector<sycl::event> events;
                 events.reserve(static_cast<std::size_t>(extentWithoutInnermost.prod()));
 
-                std::cout << "pitches " << this->m_dstPitchBytes << "width " << this->m_extentWidth << std::endl;
-
                 if(static_cast<std::size_t>(this->m_extent.prod()) != 0u)
                 {
                     using Elem = std::remove_cvref_t<decltype(this->m_value)>;
                     Elem* dstBase = reinterpret_cast<Elem*>(this->m_dstMemNative);
-
-                    std::cout << "Value before fill at base: " << dstBase[0] << std::endl;
 
                     meta::ndLoopIncIdx(
                         extentWithoutInnermost,
                         [&](Vec<DimMin1, ExtentSize> const& idx)
                         {
                             auto offsetBytes = (castVec<DstSize>(idx) * dstPitchBytesWithoutInnermost).sum();
-                            Elem* ptr = reinterpret_cast<Elem*>(reinterpret_cast<std::uint8_t*>(this->m_dstMemNative) + offsetBytes);
-
-                            std::cerr << "Value before fill at offset " << offsetBytes << ": " << ptr[0] << std::endl;
+                            Elem* ptr = reinterpret_cast<Elem*>(
+                                reinterpret_cast<std::uint8_t*>(this->m_dstMemNative) + offsetBytes);
 
                             events.push_back(
                                 queue.fill<TValue>(ptr, this->m_value, this->m_extentWidth, requirements));
-
-                            std::cerr << "Value after fill at offset " << offsetBytes << ": " << ptr[0] << std::endl;
                         });
-
-                    // queue.wait_and_throw(); // Ensure fill completes before checking results
                 }
 
 

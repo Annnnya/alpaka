@@ -1,4 +1,4 @@
-/* Copyright 2022 Axel Huebl, Benjamin Worpitz, Andrea Bocci, Bernhard Manfred Gruber, Jeffrey Kelling, Jan Stephan
+/* Copyright 2025 Maria Michailidi, Anna Polova, Abdulrahman Al Marzouqi
  * SPDX-License-Identifier: MPL-2.0
  */
 
