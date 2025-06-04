@@ -61,7 +61,6 @@ TEMPLATE_LIST_TEST_CASE("memBufFillPrimitiveValuesTest", "[memBuf]", alpaka::tes
     CHECK(passed);
 }
 
-
 TEMPLATE_LIST_TEST_CASE("memBufFillNonPrimitiveValuesTest", "[memBuf]", alpaka::test::TestAccs)
 {
     using Acc = TestType;
@@ -96,8 +95,6 @@ TEMPLATE_LIST_TEST_CASE("memBufFillNonPrimitiveValuesTest", "[memBuf]", alpaka::
 
     auto const extent = alpaka::test::extentBuf<Dim, Idx>;
 
-    std::cout << "k twra extent: " << extent << std::endl;
-
     auto buf = alpaka::allocBuf<Elem, Idx>(dev, extent);
 
     constexpr Elem fillVal = {42, 99.};
@@ -119,4 +116,39 @@ TEMPLATE_LIST_TEST_CASE("memBufFillNonPrimitiveValuesTest", "[memBuf]", alpaka::
         }
     }
     CHECK(passed);
+}
+
+TEMPLATE_LIST_TEST_CASE("memBufFillScalarFloatTest", "[memBuf][scalarFloat]", alpaka::test::TestAccs)
+{
+    using Acc = TestType;
+    using Dev = alpaka::Dev<Acc>;
+    using Queue = alpaka::test::DefaultQueue<Dev>;
+    using Elem = float;
+    using Idx = alpaka::Idx<Acc>;
+
+    auto const platformHost = alpaka::PlatformCpu{};
+    auto const devHost = alpaka::getDevByIdx(platformHost, 0);
+
+    auto const platformAcc = alpaka::Platform<Acc>{};
+    auto const dev = alpaka::getDevByIdx(platformAcc, 0);
+
+    INFO("Test fill function");
+    INFO(alpaka::getName(dev));
+
+    Queue queue(dev);
+
+    auto const extent = alpaka::test::extentBuf<alpaka::DimInt<0u>, Idx>;
+
+    auto buf = alpaka::allocBuf<Elem, Idx>(dev, extent);
+
+    constexpr Elem fillVal = 42.;
+    alpaka::fill(queue, buf, fillVal);
+
+    // Copy result to host and check
+    auto bufHost = alpaka::allocBuf<Elem, Idx>(devHost, extent);
+    alpaka::memcpy(queue, bufHost, buf);
+    alpaka::wait(queue);
+
+    Elem const* ptr = std::data(bufHost);
+    CHECK(ptr[0] == fillVal);
 }
