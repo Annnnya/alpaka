@@ -13,8 +13,8 @@ namespace alpaka
 
     namespace detail
     {
-        // Base for Fill task
-        template<typename TDim, typename TView, typename TExtent, typename TValue>
+        //! The CPU device ND memory fill task base.
+        template<typename TDim, typename TView, typename TExtent>
         struct TaskFillCpuBase
         {
             static_assert(TDim::value > 0);
@@ -23,11 +23,10 @@ namespace alpaka
             using DstSize = Idx<TView>;
             using Elem = alpaka::Elem<TView>;
 
-            static_assert(std::is_same_v<Elem, TValue>, "Fill value type must match view element type");
             static_assert(std::is_trivially_copyable_v<Elem>, "Only trivially copyable types supported for fill");
 
             template<typename TViewFwd>
-            TaskFillCpuBase(TViewFwd&& view, TValue const& value, TExtent const& extent)
+            TaskFillCpuBase(TViewFwd&& view, Elem const& value, TExtent const& extent)
                 : m_value(value)
                 , m_extent(getExtents(extent))
                 , m_extentWidth(getExtents(extent).back())
@@ -45,7 +44,7 @@ namespace alpaka
                 ALPAKA_ASSERT(reinterpret_cast<std::uintptr_t>(m_dstMemNative) % alignof(Elem) == 0);
             }
 
-            TValue const m_value;
+            Elem const m_value;
             Vec<TDim, ExtentSize> const m_extent;
             ExtentSize const m_extentWidth;
 #if(!defined(NDEBUG)) || (ALPAKA_DEBUG >= ALPAKA_DEBUG_FULL)
@@ -55,14 +54,13 @@ namespace alpaka
             std::uint8_t* const m_dstMemNative;
         };
 
-        // Generic ND version
-        template<typename TDim, typename TView, typename TExtent, typename TValue>
-        struct TaskFillCpu : public TaskFillCpuBase<TDim, TView, TExtent, TValue>
+        //! Generic ND version memory fill task.
+        template<typename TDim, typename TView, typename TExtent>
+        struct TaskFillCpu : public TaskFillCpuBase<TDim, TView, TExtent>
         {
-            using Base = TaskFillCpuBase<TDim, TView, TExtent, TValue>;
-            using Base::Base;
-            using Elem = typename Base::Elem;
-            using ExtentSize = typename Base::ExtentSize;
+            using TaskFillCpuBase<TDim, TView, TExtent>::TaskFillCpuBase;
+            using typename TaskFillCpuBase<TDim, TView, TExtent>::Elem;
+            using typename TaskFillCpuBase<TDim, TView, TExtent>::ExtentSize;       
 
             ALPAKA_FN_HOST auto operator()() const -> void
             {
@@ -85,15 +83,13 @@ namespace alpaka
         };
 
         // 0D version (scalar fill)
-        template<typename TView, typename TExtent, typename TValue>
-        struct TaskFillCpu<DimInt<0u>, TView, TExtent, TValue>
+        template<typename TView, typename TExtent>
+        struct TaskFillCpu<DimInt<0u>, TView, TExtent>
         {
             using Elem = alpaka::Elem<TView>;
 
-            static_assert(std::is_same_v<Elem, TValue>, "Fill value must match view element type");
-
             template<typename TViewFwd>
-            TaskFillCpu(TViewFwd&& view, TValue const& value, [[maybe_unused]] TExtent const& extent)
+            TaskFillCpu(TViewFwd&& view, Elem const& value, [[maybe_unused]] TExtent const& extent)
                 : m_value(value)
                 , m_dstMemNative(getPtrNative(view))
             {
@@ -104,10 +100,10 @@ namespace alpaka
 
             ALPAKA_FN_HOST auto operator()() const noexcept -> void
             {
-                m_dstMemNative = m_value;
+                *m_dstMemNative = m_value;
             }
 
-            TValue const m_value;
+            Elem const m_value;
             Elem* const m_dstMemNative;
         };
     } // namespace detail
@@ -118,18 +114,16 @@ namespace alpaka
         template<typename TDim>
         struct CreateTaskFill<TDim, DevCpu>
         {
-            template<typename TExtent, typename TViewFwd, typename TValue>
-            ALPAKA_FN_HOST static auto createTaskFill(TViewFwd&& view, TValue const& value, TExtent const& extent)
+            template<typename TExtent, typename TViewFwd>
+            ALPAKA_FN_HOST static auto createTaskFill(TViewFwd&& view, alpaka::Elem<std::remove_reference_t<TViewFwd>> const& value, TExtent const& extent)
             {
                 using TView = std::remove_reference_t<TViewFwd>;
+                using Elem = alpaka::Elem<TView>;
                 static_assert(
-                    std::is_same_v<TValue, alpaka::Elem<TView>>,
-                    "Fill value type must match view element type");
-                static_assert(
-                    std::is_trivially_copyable_v<TValue>,
+                    std::is_trivially_copyable_v<Elem>,
                     "Only trivially copyable types are supported for fill");
 
-                return alpaka::detail::TaskFillCpu<TDim, TView, TExtent, TValue>{
+                return alpaka::detail::TaskFillCpu<TDim, TView, TExtent>{
                     std::forward<TViewFwd>(view),
                     value,
                     extent};
