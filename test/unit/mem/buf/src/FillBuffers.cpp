@@ -118,7 +118,7 @@ TEMPLATE_LIST_TEST_CASE("memBufFillNonPrimitiveValuesTest", "[memBuf]", alpaka::
     CHECK(passed);
 }
 
-TEMPLATE_LIST_TEST_CASE("memBufFillScalarFloatTest", "[memBuf][scalarFloat]", alpaka::test::TestAccs)
+TEMPLATE_LIST_TEST_CASE("memBufFillScalarFloatTest", "[memBuf]", alpaka::test::TestAccs)
 {
     using Acc = TestType;
     using Dev = alpaka::Dev<Acc>;
