@@ -1,3 +1,7 @@
+/* Copyright 2025 Maria Michailidi, Anna Polova, Abdulrahman Al Marzouqi
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
 #pragma once
 
 #include "alpaka/core/Debug.hpp"

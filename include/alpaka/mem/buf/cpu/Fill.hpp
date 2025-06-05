@@ -1,3 +1,7 @@
+/* Copyright 2025 Maria Michailidi, Anna Polova, Abdulrahman Al Marzouqi
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
 #pragma once
 
 #include "alpaka/core/Assert.hpp"
@@ -60,7 +64,7 @@ namespace alpaka
         {
             using TaskFillCpuBase<TDim, TView, TExtent>::TaskFillCpuBase;
             using typename TaskFillCpuBase<TDim, TView, TExtent>::Elem;
-            using typename TaskFillCpuBase<TDim, TView, TExtent>::ExtentSize;       
+            using typename TaskFillCpuBase<TDim, TView, TExtent>::ExtentSize;
 
             ALPAKA_FN_HOST auto operator()() const -> void
             {
@@ -115,7 +119,10 @@ namespace alpaka
         struct CreateTaskFill<TDim, DevCpu>
         {
             template<typename TExtent, typename TViewFwd>
-            ALPAKA_FN_HOST static auto createTaskFill(TViewFwd&& view, alpaka::Elem<std::remove_reference_t<TViewFwd>> const& value, TExtent const& extent)
+            ALPAKA_FN_HOST static auto createTaskFill(
+                TViewFwd&& view,
+                alpaka::Elem<std::remove_reference_t<TViewFwd>> const& value,
+                TExtent const& extent)
             {
                 using TView = std::remove_reference_t<TViewFwd>;
                 using Elem = alpaka::Elem<TView>;
@@ -123,10 +130,7 @@ namespace alpaka
                     std::is_trivially_copyable_v<Elem>,
                     "Only trivially copyable types are supported for fill");
 
-                return alpaka::detail::TaskFillCpu<TDim, TView, TExtent>{
-                    std::forward<TViewFwd>(view),
-                    value,
-                    extent};
+                return alpaka::detail::TaskFillCpu<TDim, TView, TExtent>{std::forward<TViewFwd>(view), value, extent};
             }
         };
     } // namespace trait

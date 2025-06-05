@@ -1,3 +1,7 @@
+/* Copyright 2025 Maria Michailidi, Anna Polova, Abdulrahman Al Marzouqi
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
 #pragma once
 
 #include "alpaka/core/Assert.hpp"
@@ -11,8 +15,6 @@
 #include "alpaka/queue/QueueUniformCudaHipRtNonBlocking.hpp"
 #include "alpaka/queue/Traits.hpp"
 #include "alpaka/wait/Traits.hpp"
-
-#include <alpaka/alpaka.hpp>
 
 #include <iostream>
 #include <type_traits>
@@ -35,8 +37,7 @@ namespace alpaka
                 TExtent extent,
                 TPitchBytes pitchBytes) const
             {
-                using namespace alpaka;
-                for(auto const& idx : uniformElementsND(acc, extent))
+                for(auto const& idx : alpaka::uniformElementsND(acc, extent))
                 {
                     std::uintptr_t offsetBytes
                         = static_cast<std::uintptr_t>((pitchBytes * idx).sum()); // ci errors here
