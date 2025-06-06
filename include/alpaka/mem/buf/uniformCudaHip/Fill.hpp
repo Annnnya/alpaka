@@ -39,8 +39,7 @@ namespace alpaka
             {
                 for(auto const& idx : alpaka::uniformElementsND(acc, extent))
                 {
-                    std::uintptr_t offsetBytes
-                        = static_cast<std::uintptr_t>((pitchBytes * idx).sum()); // ci errors here
+                    std::uintptr_t offsetBytes = static_cast<std::uintptr_t>((pitchBytes * idx).sum());
 
                     TElem* elem = reinterpret_cast<TElem*>(
                         __builtin_assume_aligned(reinterpret_cast<std::uint8_t*>(ptr) + offsetBytes, alignof(TElem)));
@@ -78,8 +77,6 @@ namespace alpaka
                 threads.x() = alpaka::detail::getThreadNumForFill<TDim, Idx>();
                 Vec const elements = Vec::ones();
                 Vec blocks = Vec::ones();
-
-                // std::cerr << "blocks " << blocks << " elems " << elements << " treads " << threads << std::endl;
 
                 WorkDiv grid = WorkDiv(blocks, threads, elements);
 
