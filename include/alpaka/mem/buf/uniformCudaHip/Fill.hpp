@@ -37,14 +37,34 @@ namespace alpaka
                 TExtent extent,
                 TPitchBytes pitchBytes) const
             {
-                for(auto const& idx : alpaka::uniformElementsND(acc, extent))
+                if(extent.prod() != 1u)
                 {
-                    std::uintptr_t offsetBytes = static_cast<std::uintptr_t>((pitchBytes * idx).sum());
+                    for(auto const& idx : alpaka::uniformElementsND(acc, extent))
+                    {
+                        std::uintptr_t offsetBytes = static_cast<std::uintptr_t>((pitchBytes * idx).sum());
 
-                    TElem* elem = reinterpret_cast<TElem*>(
-                        __builtin_assume_aligned(reinterpret_cast<std::uint8_t*>(ptr) + offsetBytes, alignof(TElem)));
+                        TElem* elem = reinterpret_cast<TElem*>(__builtin_assume_aligned(
+                            reinterpret_cast<std::uint8_t*>(ptr) + offsetBytes,
+                            alignof(TElem)));
 
-                    // Write value at element address
+                        // Write value at element address
+                        *elem = value;
+                    }
+                }
+            }
+        };
+
+        template<typename TElem, typename TExtent>
+        struct FillKernel0D
+        {
+            template<typename TAcc>
+            ALPAKA_FN_ACC void operator()([[maybe_unused]] TAcc const& acc, TElem* ptr, TElem value, TExtent extent)
+                const
+            {
+                if(extent.prod() == 1u)
+                {
+                    TElem* elem = reinterpret_cast<TElem*>(__builtin_assume_aligned(ptr, alignof(TElem)));
+
                     *elem = value;
                 }
             }
@@ -72,21 +92,40 @@ namespace alpaka
                 using WorkDiv = alpaka::WorkDivMembers<TDim, Idx>;
                 using Vec = alpaka::Vec<TDim, Idx>;
                 using Elem = alpaka::Elem<View>;
+                static_assert(
+                    std::is_trivially_copyable_v<Elem>,
+                    "Only trivially copyable types are supported for fill");
 
-                Vec threads = Vec::ones();
-                threads.x() = alpaka::detail::getThreadNumForFill<TDim, Idx>();
-                Vec const elements = Vec::ones();
-                Vec blocks = Vec::ones();
+                if constexpr(TDim::value == 0)
+                {
+                    Vec threads = Vec::ones();
+                    Vec const elements = Vec::ones();
+                    Vec blocks = Vec::ones();
 
-                WorkDiv grid = WorkDiv(blocks, threads, elements);
+                    WorkDiv grid = WorkDiv(blocks, threads, elements);
+                    return alpaka::createTaskKernel<Acc>(
+                        grid,
+                        alpaka::detail::FillKernel0D<Elem, TExtent>{},
+                        std::data(view),
+                        value,
+                        extent);
+                }
+                else
+                {
+                    Vec threads = Vec::ones();
+                    threads.x() = alpaka::detail::getThreadNumForFill<TDim, Idx>();
+                    Vec const elements = Vec::ones();
+                    Vec blocks = Vec::ones();
 
-                return alpaka::createTaskKernel<Acc>(
-                    grid,
-                    alpaka::detail::FillKernelND<Elem, TExtent, Vec>{},
-                    std::data(view),
-                    value,
-                    extent,
-                    getPitchesInBytes(view));
+                    WorkDiv grid = WorkDiv(blocks, threads, elements);
+                    return alpaka::createTaskKernel<Acc>(
+                        grid,
+                        alpaka::detail::FillKernelND<Elem, TExtent, Vec>{},
+                        std::data(view),
+                        value,
+                        extent,
+                        getPitchesInBytes(view));
+                }
             }
         };
     } // namespace trait

@@ -101,7 +101,6 @@ namespace alpaka
                 if(static_cast<std::size_t>(this->m_extent.prod()) != 0u)
                 {
                     using Elem = std::remove_cvref_t<decltype(this->m_value)>;
-                    Elem* dstBase = reinterpret_cast<Elem*>(this->m_dstMemNative);
 
                     meta::ndLoopIncIdx(
                         extentWithoutInnermost,
@@ -111,8 +110,11 @@ namespace alpaka
                             Elem* ptr = reinterpret_cast<Elem*>(
                                 reinterpret_cast<std::uint8_t*>(this->m_dstMemNative) + offsetBytes);
 
+                            assert(this->m_extentWidth >= 0);
+
                             events.push_back(
-                                queue.fill<TValue>(ptr, this->m_value, this->m_extentWidth, requirements));
+                                queue.fill<TValue>(ptr, this->m_value, static_cast<std::size_t>(this->m_extentWidth), requirements));
+
                         });
                 }
 
@@ -136,7 +138,7 @@ namespace alpaka
 #    endif
                 if(static_cast<std::size_t>(this->m_extent.prod()) != 0u)
                 {
-                    return queue.fill(this->m_dstMemNative, this->m_value, this->m_extentWidth, requirements);
+                    return queue.fill(this->m_dstMemNative, this->m_value, static_cast<std::size_t>(this->m_extentWidth), requirements);
                 }
                 else
                 {
